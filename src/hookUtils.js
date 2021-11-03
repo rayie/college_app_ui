@@ -24,6 +24,10 @@ export function reduxify(component, store = {}) {
   return withRouter(connect(mapStateToProps, mapDispatchToProps)(component));
 }
 
+export function onLanding() {
+  console.log("firing onLanding");
+}
+
 const defaultFetchParams = {
   mode: "cors",
   cache: "no-cache",
@@ -41,6 +45,28 @@ export function post(path, postData) {
     ...defaultFetchParams,
     method: "POST",
     body: JSON.stringify(postData),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      return response.json();
+    })
+    .then(result => {
+      return result;
+    })
+    .catch(error => {
+      throw error;
+    });
+}
+
+export function get(path) {
+  //let p = process.env.API_URL + `/api/` + path;
+  let p = `http://localhost:8080/api/` + path;
+  console.log("making http GET to " + p);
+  return fetch(p, {
+    ...defaultFetchParams,
+    method: "GET",
   })
     .then(response => {
       if (!response.ok) {
