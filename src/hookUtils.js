@@ -47,12 +47,12 @@ export function post(path, postData) {
     body: JSON.stringify(postData),
   })
     .then(response => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
       return response.json();
     })
     .then(result => {
+      if (result.error) {
+        throw new Error(result.error);
+      }
       return result;
     })
     .catch(error => {
@@ -69,12 +69,12 @@ export function get(path) {
     method: "GET",
   })
     .then(response => {
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
       return response.json();
     })
     .then(result => {
+      if (result.error) {
+        throw new Error(result.error);
+      }
       return result;
     })
     .catch(error => {

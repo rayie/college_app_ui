@@ -3,32 +3,57 @@ import ExamplesNavbar from "components/Navbars/ExamplesNavbar.js";
 import React, { useEffect, useState } from "react";
 // reactstrap components
 import { Button, Col, Container, Input, InputGroup, Row } from "reactstrap";
-import { addClassLists, get, reduxify } from "../../hookUtils";
+import { addClassLists, get, post, reduxify } from "../../hookUtils";
 
 function TestPage(props) {
   const [firstFocus, setFirstFocus] = useState(false);
   const [schools, setSchools] = useState([]);
   const [nameEntry, setNameEntry] = useState("");
   const [cityEntry, setCityEntry] = useState("");
-  useEffect(addClassLists, []);
+  const [addsAttempted, attemptAdd] = useState(0);
+  const [situation, addSituation] = useState("None");
+
+  useEffect(addClassLists, []); //ignore this one, but leave it here
 
   useEffect(() => {
     const callGet = async () => {
       let result = await get("schools/masterlist");
       setSchools(result.schools);
-      console.log("in useEffect", result);
+      console.log("schools loaded", result);
     };
     callGet();
   }, []);
+
+  useEffect(() => {
+    console.log("triggered effect");
+    console.log(nameEntry, cityEntry);
+    if (!nameEntry || !cityEntry) {
+      return;
+    }
+    const callPost = async () => {
+      try {
+        await post("schools/add", {
+          nm: nameEntry,
+          city: cityEntry,
+        });
+      } catch (postError) {
+        console.error(postError);
+        addSituation(postError.message);
+        return;
+      }
+    };
+    if (addsAttempted && nameEntry && cityEntry) {
+      callPost();
+    }
+  }, [nameEntry, cityEntry, addsAttempted]);
 
   return (
     <>
       <ExamplesNavbar />
       <div className="wrapper">
         <div className="section section-contact-us text-center">
-          <h2 className="title">
-            Test Page - Name Entry: {nameEntry.toUpperCase()}
-          </h2>
+          <h3 className="title">Name Entry: {nameEntry.toUpperCase()}</h3>
+          <h3 className="title">City Entry: {cityEntry.toUpperCase()}</h3>
           <Container>
             <Row>
               <Col className="text-center ml-auto mr-auto" lg="6" md="8">
@@ -66,7 +91,12 @@ function TestPage(props) {
                     className="btn-round"
                     color="info"
                     href="#pablo"
-                    onClick={e => e.preventDefault()}
+                    onClick={e => {
+                      console.log("addsAttempted", addsAttempted);
+                      attemptAdd(addsAttempted + 1);
+                      e.preventDefault();
+                      return;
+                    }}
                     size="lg"
                   >
                     Add School
@@ -77,6 +107,12 @@ function TestPage(props) {
           </Container>
           <hr />
           <Container>
+            <Row>
+              <Col className="text-center ml-auto mr-auto" lg="6" md="8">
+                <h3>Debug Situation:</h3>
+                {situation}
+              </Col>
+            </Row>
             <Row>
               <Col className="text-center ml-auto mr-auto" lg="6" md="8">
                 <h3>Schools loaded:{schools.length}</h3>
